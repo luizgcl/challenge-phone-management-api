@@ -15,10 +15,18 @@ class PhoneNumberController extends Controller
      */
     public function index(Request $request)
     {
-        $phoneNumbers = PhoneNumber::query()->paginate(
-            perPage: $request->input('perPage', 10),
-            page: $request->input('page', 1),
-        );
+        $phoneNumbers = PhoneNumber::query();
+
+        if ($request->has('search')) {
+            $phoneNumbers->where('value', 'like', '%' . $request->input('search') . '%');
+        }
+
+        $phoneNumbers = $phoneNumbers
+            ->orderByDesc('created_at')
+            ->paginate(
+                perPage: $request->input('perPage', 10),
+                page: $request->input('page', 1),
+            );
 
         $phoneNumbers->getCollection()->transform(function ($phoneNumber) {
             return new PhoneNumberResponseDTO($phoneNumber);
